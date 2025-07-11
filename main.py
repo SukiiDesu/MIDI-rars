@@ -132,5 +132,6 @@ def choose_folders_and_convert():
     convert_midi_to_rars(source_file)
     messagebox.showinfo("Done", "File has been converted.")
 
+
 if __name__ == "__main__":
     choose_folders_and_convert()
