@@ -81,24 +81,35 @@ def convert_midi_to_rars(filepath):
                         print(f"Warning: note_off for note {msg.note} without matching note_on")
 
         all_events.sort(key=lambda e: e[0])
-        with open("output.txt", "w") as f:
-            last_start_time = 0
-            for i, (start_ms, pitch, duration_ms, sample_id, velocity) in enumerate(all_events):
-                gap = start_ms - last_start_time
-                if gap > 0:
-                    f.write(f"0, {int(gap)}, 0, 0")
-                    if i < len(all_events) - 1:
-                        f.write(",\n")
-                    else:
-                        f.write("\n")
 
-                f.write(f"{pitch}, {int(duration_ms)}, {sample_id}, {velocity}")
-                if i < len(all_events) - 1:
-                    f.write(",\n")
+        output_lines = []
+        last_start_time = 0
+        total_notes = 0
+
+        for i, (start_ms, pitch, duration_ms, sample_id, velocity) in enumerate(all_events):
+            gap = start_ms - last_start_time
+
+            if gap > 0:
+                output_lines.append(f"0, {int(gap)}, 0, 0")
+                total_notes += 1
+
+            output_lines.append(f"{pitch}, {int(duration_ms)}, {sample_id}, {velocity}")
+            total_notes += 1
+
+            last_start_time = start_ms
+
+        with open("notas.data", "w") as f:
+            f.write(f"TAMANHO_MUSICA: .word {total_notes}\n")
+            f.write("NOTAS:\n")
+
+            for i, line in enumerate(output_lines):
+                if i < len(output_lines) - 1:
+                    f.write(line + ",\n")
                 else:
-                    f.write("\n")
-
-                last_start_time = start_ms
+                    if line.endswith(","):
+                        f.write(line[:-1] + "\n")
+                    else:
+                        f.write(line + "\n")
 
 
     except Exception as e:
